@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Box Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      #container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      label {
+        font-weight: bold;
+      }
+      input[type="number"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #result {
+        margin-top: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Box Calculator</h1>
+    <div id="container">
+      <label for="roomHeight">Room Height (mm):</label>
+      <input type="number" id="roomHeight" placeholder="Enter room height" />
+
+      <label for="roomLength">Room Length (mm):</label>
+      <input type="number" id="roomLength" placeholder="Enter room length" />
+
+      <label for="roomWidth">Room Width (mm):</label>
+      <input type="number" id="roomWidth" placeholder="Enter room width" />
+
+      <label for="boxLength">Box Length (mm):</label>
+      <input type="number" id="boxLength" placeholder="Enter box length" />
+
+      <label for="boxWidth">Box Width (mm):</label>
+      <input type="number" id="boxWidth" placeholder="Enter box width" />
+
+      <label for="boxHeight">Box Height (mm):</label>
+      <input type="number" id="boxHeight" placeholder="Enter box height" />
+
+      <button onclick="calculateBoxes()">Calculate</button>
+
+      <div id="result"></div>
+    </div>
+
+    <script>
+      function calculateBoxes() {
+        var roomHeight = parseInt(document.getElementById("roomHeight").value);
+        var roomLength = parseInt(document.getElementById("roomLength").value);
+        var roomWidth = parseInt(document.getElementById("roomWidth").value);
+        var boxLength = parseInt(document.getElementById("boxLength").value);
+        var boxWidth = parseInt(document.getElementById("boxWidth").value);
+        var boxHeight = parseInt(document.getElementById("boxHeight").value);
+
+        var orientations = [
+          { width: boxWidth, height: boxHeight, length: boxLength },
+          { width: boxWidth, height: boxLength, length: boxHeight },
+          { width: boxLength, height: boxHeight, length: boxWidth },
+          { width: boxLength, height: boxWidth, length: boxHeight },
+          { width: boxHeight, height: boxWidth, length: boxLength },
+          { width: boxHeight, height: boxLength, length: boxWidth },
+        ];
+
+        var maxBoxes = 0;
+        var optimalOrientation = null;
+
+        orientations.forEach(function (orientation) {
+          var boxesHeight = Math.floor(roomHeight / orientation.height);
+          var boxesLength = Math.floor(roomLength / orientation.length);
+          var boxesWidth = Math.floor(roomWidth / orientation.width);
+
+          var totalBoxes = boxesHeight * boxesLength * boxesWidth;
+          if (totalBoxes > maxBoxes) {
+            maxBoxes = totalBoxes;
+            optimalOrientation = orientation;
+          }
+        });
+
+        if (optimalOrientation) {
+          var output = "Total Boxes: " + maxBoxes + "<br>";
+          output +=
+            "Optimal Orientation: Width=" +
+            optimalOrientation.width +
+            "mm (room width " +
+            roomWidth +
+            "mm), ";
+          output +=
+            "Height=" +
+            optimalOrientation.height +
+            "mm (room height " +
+            roomHeight +
+            "mm), ";
+          output +=
+            "Length=" +
+            optimalOrientation.length +
+            "mm (room length " +
+            roomLength +
+            "mm)";
+          document.getElementById("result").innerHTML = output;
+        } else {
+          document.getElementById("result").innerHTML =
+            "No valid orientation found.";
+        }
+      }
+    </script>
+  </body>
+</html>
