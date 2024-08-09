@@ -34,15 +34,35 @@
       .product-item:last-child {
         border-bottom: none;
       }
+      #downloadBtn {
+        margin: 20px 0;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: block;
+        width: 100%;
+        max-width: 200px;
+        margin: 20px auto;
+        text-align: center;
+        border-radius: 5px;
+      }
+      #downloadBtn:hover {
+        background-color: #0056b3;
+      }
     </style>
   </head>
   <body>
     <h1>All Orders</h1>
     <div id="ordersContainer"></div>
+    <button id="downloadBtn">Download as Excel</button>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <!-- SheetJS (XLSX) library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     <script>
       // Initialize Firebase
@@ -127,8 +147,61 @@
         });
       }
 
+      // Convert orders to Excel format and download
+      function downloadAsExcel() {
+        database.ref("orders").once("value", (snapshot) => {
+          const orders = snapshot.val();
+          const data = [];
+
+          for (const orderId in orders) {
+            const order = orders[orderId];
+            const boxCalculation = order.boxCalculation || {};
+            const roomDimensions = boxCalculation.roomDimensions || {};
+            const boxDimensions = boxCalculation.boxDimensions || {};
+            const optimalOrientation = boxCalculation.optimalOrientation || {};
+
+            const products = order.products || {};
+
+            for (const productName in products) {
+              data.push({
+                "Consumer Name": order.consumerName || "N/A",
+                "Room Height (mm)": roomDimensions.height || "N/A",
+                "Room Length (mm)": roomDimensions.length || "N/A",
+                "Room Width (mm)": roomDimensions.width || "N/A",
+                "Box Height (mm)": boxDimensions.height || "N/A",
+                "Box Length (mm)": boxDimensions.length || "N/A",
+                "Box Width (mm)": boxDimensions.width || "N/A",
+                "Total Boxes": boxCalculation.totalBoxes || "N/A",
+                "Optimal Orientation (Width)":
+                  optimalOrientation.width || "N/A",
+                "Optimal Orientation (Height)":
+                  optimalOrientation.height || "N/A",
+                "Optimal Orientation (Length)":
+                  optimalOrientation.length || "N/A",
+                "Product Name": productName,
+                "Product Price": products[productName].price || "N/A",
+                "Product Quantity": products[productName].quantity || "N/A",
+                "Total Amount": order.totalAmount
+                  ? order.totalAmount.toFixed(2)
+                  : "N/A",
+              });
+            }
+          }
+
+          const worksheet = XLSX.utils.json_to_sheet(data);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+          XLSX.writeFile(workbook, "orders.xlsx");
+        });
+      }
+
       // Call the function to fetch orders on page load
       fetchOrders();
+
+      // Attach event listener to the download button
+      document
+        .getElementById("downloadBtn")
+        .addEventListener("click", downloadAsExcel);
     </script>
   </body>
 </html>
